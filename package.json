@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/Suriya-Ravichandran/todo-api-node#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "body-parser": "^2.2.2",
     "express": "^5.2.1",
     "mongoose": "^9.1.3"
