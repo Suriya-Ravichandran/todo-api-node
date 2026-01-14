@@ -5,6 +5,8 @@ const connectdb = require("./db")
 const bodyparser= require('body-parser')
 const User = require("./models/User")
 const bcrypt=require("bcrypt")
+const jwt=require("jsonwebtoken")
+const auth = require("./middleware/auth")
 // create express app
 
 const app = express()
@@ -42,6 +44,35 @@ app.post("/api/signin",async (req,res)=>{
    
 })
 
+app.post("/api/login",async (req,res)=>{
+    try{
+         const {email,password} = req.body
+         const user=await  User.findOne({email})
+         if(!user){
+             res.status(400).json({error:"User Not Found"})
+         }
+         const isMatch = await bcrypt.compare(password,user.password)
+         if(!isMatch){
+             res.status(400).json({error:"Incorrect Password"})
+         }
+
+         const token=jwt.sign(
+            {
+                id:user._id,
+                email:user.email
+            },
+            "private_key",
+            {expiresIn:"1h"}
+         )
+        
+         res.status(200).json({message:"Login Sucess",token})
+    }
+    catch(err){
+         res.status(500).json({error:err.message})
+    }
+   
+})
+
 
 // create todo
 app.post("/api/todo",async(req,res)=>{
@@ -57,7 +88,7 @@ app.post("/api/todo",async(req,res)=>{
 })
 
 // get all todo
-app.get("/api/todo",async(req,res)=>{
+app.get("/api/todo",auth,async(req,res)=>{
     try{
         const todo= await Todo.find()
         res.status(200).json(todo)
